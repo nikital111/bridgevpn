@@ -21,9 +21,8 @@ import { setCounterData } from "./scripts/script";
 const contractAddress = "0x4E117b36127D85255AF49A758c2a4766cC017433";
 const BUSDaddress = "0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56";
 let timer;
-let web3;
+let myWeb3;
 function App() {
-  // const [web3, setWeb3] = useState(new Web3());
   const [state, setState] = useState({
     wallet: '',
     min: 0,
@@ -59,15 +58,11 @@ function App() {
     document.documentElement.lang = l;
   };
 
-  useEffect(() => {
-    console.log(state)
-  }, [state])
-
   const connectWallet = async () => {
     try {
       const providerOptions = {
         walletconnect: {
-          package: WalletConnectProvider, // required
+          package: WalletConnectProvider, 
           options: {
             rpc: {
               56: "https://capable-divine-knowledge.bsc.discover.quiknode.pro/334922ca23326f3194def4af7df85732b7e2e697/",
@@ -78,17 +73,16 @@ function App() {
       };
 
       const web3Modal = new Web3Modal({
-        cacheProvider: false, // optional
-        providerOptions // required
+        cacheProvider: false, 
+        providerOptions 
       });
 
       const provider = await web3Modal.connect();
-      // setWeb3(new Web3(provider));
-      web3 = new Web3(provider);
-      console.log(provider.chainId)
+      myWeb3 = new Web3(provider);
 
       if (provider.chainId !== '0x38' && provider.chainId !== 56) {
         if (typeof (provider.chainId) === 'string') {
+          changeModal('popupChain', true);
           await provider.request({
             method: 'wallet_switchEthereumChain',
             params: [
@@ -117,14 +111,26 @@ function App() {
             end: 0
           }
         );
-        web3 = new Web3();
+        myWeb3 = new Web3();
       });
 
       provider.on("accountsChanged", async (accounts) => {
         if (accounts[0]) {
-          const balance = await getBalance(web3, contractAddress);
-          console.log(balance)
-          setState({ ...state, wallet: accounts[0], balance: balance });
+          const [start, end] = await getTime(myWeb3, contractAddress);
+          const [min, max] = await getMinMax(myWeb3, contractAddress);
+          const [totalSupply, maxSupply] = await getSupply(myWeb3, contractAddress);
+          const balance = await getBalance(myWeb3, contractAddress);
+
+          setState({
+            wallet: accounts[0],
+            balance: balance,
+            min: min,
+            max: max,
+            totalSupply: totalSupply,
+            maxSupply: maxSupply,
+            start: start,
+            end: end
+          });
         }
         else {
           changeModal('popupChain', false);
@@ -139,15 +145,13 @@ function App() {
               end: 0
             }
           );
-          web3 = new Web3();
+          myWeb3 = new Web3();
         }
-        console.log(accounts);
       });
 
 
 
       provider.on("chainChanged", (chainId) => {
-        console.log(chainId);
         if (chainId !== '0x38') {
           requestChangeChain(provider);
           changeModal('popupChain', true);
@@ -155,11 +159,7 @@ function App() {
         else changeModal('popupChain', false);
       });
 
-      const myweb3 = new Web3(provider);
-
-
-      init(web3);
-      console.log(web3);
+      init(myWeb3);
     }
     catch (err) {
       console.log(err)
@@ -180,8 +180,7 @@ function App() {
   };
 
   const dis = async () => {
-    // setWeb3(new Web3());
-    web3 = new Web3();
+    myWeb3 = new Web3();
     setState({
       wallet: '',
       balance: 0,
@@ -216,8 +215,8 @@ function App() {
       return;
     }
     try {
-      const approved = await getApproveBUSD(web3, BUSDaddress, contractAddress);
-      if (approved >= amount) BuyTokens(web3, contractAddress, amount);
+      const approved = await getApproveBUSD(myWeb3, BUSDaddress, contractAddress);
+      if (approved >= amount) BuyTokens(myWeb3, contractAddress, amount);
       else changeModal('popupApprove', true);
     }
     catch (err) {
@@ -234,16 +233,6 @@ function App() {
     const balance = await getBalance(web3, contractAddress);
 
     setState({
-      wallet: acc,
-      balance: balance,
-      min: min,
-      max: max,
-      totalSupply: totalSupply,
-      maxSupply: maxSupply,
-      start: start,
-      end: end
-    })
-    console.log({
       wallet: acc,
       balance: balance,
       min: min,
@@ -309,7 +298,7 @@ function App() {
               path="/"
               element={
                 <HomeLogin
-                  web3={web3}
+                  web3={myWeb3}
                   t={t}
                   changeModal={changeModal}
                   modal={modal}
@@ -326,7 +315,7 @@ function App() {
               path="/"
               element={
                 <Home
-                  web3={web3}
+                  web3={myWeb3}
                   connectWallet={connectWallet}
                   t={t}
                   changeModal={changeModal}
