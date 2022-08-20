@@ -88,27 +88,63 @@ function App() {
       console.log(provider.chainId)
 
       if (provider.chainId !== '0x38' && provider.chainId !== 56) {
-        console.log("fuck")
-        await provider.request({
-          method: 'wallet_switchEthereumChain',
-          params: [
-            {
-              chainId: '0x38',
-            },
-          ],
-        });
+        if (typeof (provider.chainId) === 'string') {
+          await provider.request({
+            method: 'wallet_switchEthereumChain',
+            params: [
+              {
+                chainId: '0x38',
+              },
+            ],
+          });
+        }
+        else {
+          changeModal('popupChain', true);
+        }
       }
-
-      provider.on("accountsChanged", async (accounts) => {
-        const balance = await getBalance(web3, contractAddress);
-        console.log(balance)
-        setState({ ...state, wallet: accounts[0], balance: balance });
-        console.log(accounts);
-      });
 
       provider.on("disconnect", async (code, reason) => {
         console.log(code, reason);
+        changeModal('popupChain', false);
+        setState(
+          {
+            wallet: '',
+            min: 0,
+            max: 0,
+            totalSupply: 0,
+            maxSupply: 0,
+            start: 0,
+            end: 0
+          }
+        );
+        web3 = new Web3();
       });
+
+      provider.on("accountsChanged", async (accounts) => {
+        if (accounts[0]) {
+          const balance = await getBalance(web3, contractAddress);
+          console.log(balance)
+          setState({ ...state, wallet: accounts[0], balance: balance });
+        }
+        else {
+          changeModal('popupChain', false);
+          setState(
+            {
+              wallet: '',
+              min: 0,
+              max: 0,
+              totalSupply: 0,
+              maxSupply: 0,
+              start: 0,
+              end: 0
+            }
+          );
+          web3 = new Web3();
+        }
+        console.log(accounts);
+      });
+
+
 
       provider.on("chainChanged", (chainId) => {
         console.log(chainId);
