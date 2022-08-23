@@ -5,8 +5,8 @@ export default async function getTime(web3,contractAddress) {
 
     const MyContract = new web3.eth.Contract(abi,contractAddress);
 
-    const start = await MyContract.methods.timeToStartSales().call({from:acc});
-    const end = await MyContract.methods.timeToStopSales().call({from:acc});
+    const start = await MyContract.methods.timeToStartSales().call();
+    const end = await MyContract.methods.timeToStopSales().call();
 
    // console.log(tokens);
 

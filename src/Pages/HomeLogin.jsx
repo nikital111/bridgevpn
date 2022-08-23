@@ -3,10 +3,12 @@ import Logo from "../images/logo.svg";
 import Copy from "../images/copy.png";
 import Exit from "../images/exit.png";
 import { useEffect } from 'react';
+import Timer from '../Components/Timer';
+import Money from '../Components/Money';
 const contractAddress = "0x4E117b36127D85255AF49A758c2a4766cC017433";
 const BUSDaddress = "0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56";
 
-function HomeLogin({ web3, t, changeModal, modal, dis, buyTokens,amount, changeAmount, state, approveBUSD }) {
+function HomeLogin({ web3, t, changeModal, modal, dis, buyTokens,amount, changeAmount, state, approveBUSD, buyed, setBuyed }) {
     useEffect(()=>{
         const part = (state.totalSupply/state.maxSupply)*100;
         const st = part.toString();
@@ -39,71 +41,29 @@ function HomeLogin({ web3, t, changeModal, modal, dis, buyTokens,amount, changeA
                                         alignItems:'center'
                                     }}
                                 >{formatAddress(state.wallet)} 
+                                <div className='tooltip'>
                                 <img src={Copy} onClick={() => copyText(state.wallet)} style={{width:'20px',marginLeft:'5px',cursor:'pointer'}}/>
+                                <span className="tooltiptext">{t('copy')}</span>
+                                </div>
+                                <div className='tooltip'>
                                 <img src={Exit} onClick={() => changeModal('exit', true)} style={{width:'20px',marginLeft:'5px',cursor:'pointer'}}/>
+                                <span className="tooltiptext">{t('exit')}</span>
+                                </div>
                                 </a>
                             </div>
                             <p className="content__info__balance">Ваш баланс <span className="content__info__balance-total"><span className="amount"></span>{state.balance} токенов</span></p>
                         </div>
                     </div>
                 </div>
-                <div className="content__highliter-fluid">
-                    <div className="container">
-                        <div className="content__counter">
-                            <p className="content__timer__heading heading">
-                                {
-                                    Date.now() < state.start ? t('startAfter') : t('endAfter')
-                                }
-                        :</p>
-                            <div className="content__timer">
-                                <div className="days">
-                                    <div className="amount">00</div>
-                                    <div className="signature">{t('day')}</div>
-                                </div>
-                                <div className="hours">
-                                    <div className="amount">00</div>
-                                    <div className="signature">{t('hour')}</div>
-                                </div>
-                                <div className="minutes">
-                                    <div className="amount">00</div>
-                                    <div className="signature">{t('min')}</div>
-                                </div>
-                                <div className="seconds">
-                                    <div className="amount">00</div>
-                                    <div className="signature">{t('sec')}</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <Timer t={t} state={state}/>
                 <div className="container">
                     <div className="content__buy">
-                        <input type="number" className="content__buy__input" placeholder="100.00" value={amount} onChange={(e) => changeAmount(e.target.value)} />
+                        <input className="content__buy__input" placeholder="100.00" value={amount} onChange={(e) => changeAmount(e.target.value)} />
                         <div className="content__buy_available"><p>Доступно для покупки <span className="amount"></span>{state.maxSupply - state.totalSupply} МТМКМ</p></div>
                         <button className="content__buy__button" onClick={buyTokens}>{t('buy')}</button>
                     </div>
                 </div>
-                <div className="content__highliter-fluid">
-                    <div className="container">
-                        <div className="content__money">
-                            <p className="content__money__heading heading">{t('collected')} {state.totalSupply}<span className="amount"></span> BUSD, {t('left')} {state.maxSupply - state.totalSupply}<span className="amountLeft"></span>&nbsp;МТМКМ:</p>
-                            <div className="content__money__collected">
-                                <div className="content__money__bar"
-                                ></div>
-                            </div>
-                            <div className="content__money__goals">
-                                <div className="content__money__goal_min">
-                                    <p>{t('minimal')}</p>
-                                    <p className="goal">Soft Cap</p>
-                                </div>
-                                <div className="content__money__goal_max">
-                                    <p>{t('max')}</p>
-                                    <p className="goal">Hard Cap</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <Money t={t} state={state}/>
             </main>
             <div id="popupTurnOffWallet" className={`popup notification ${modal.exit ? "open" : ''}`}>
                 <div className="popup__body">
@@ -221,11 +181,14 @@ function HomeLogin({ web3, t, changeModal, modal, dis, buyTokens,amount, changeA
                     <div className="popup__content">
                         <div className="operationSymbol"><span></span></div>
                         <div className="popup__text">
-                            <p>{t('popSuccess')} 586.14&nbsp;токенов</p>
+                            <p>{t('popSuccess')} {buyed} токенов</p>
                         </div>
                         <div className="popup__agreement">
                             <button className="popup__button__agree"
-                                onClick={() => { changeModal('successPurchase', false) }}
+                                onClick={() => { 
+                                    changeModal('successPurchase', false); 
+                                    setBuyed(0);
+                                }}
                             ><span>Ок</span></button>
                         </div>
                     </div>

@@ -1,10 +1,12 @@
 import '../index.css';
 import Logo from "../images/logo.svg";
 import { useState } from 'react';
+import Timer from '../Components/Timer';
+import Money from '../Components/Money';
 // import "../scripts/main.js";
 // import "../scripts/modal.js";
 
-function Home({ web3, connectWallet, t, changeModal, modal }) {
+function Home({ web3, connectWallet, t, changeModal, modal, state }) {
 
     const [checkedRules,setCheckedRules] = useState(false);
     const check = ()=>{
@@ -19,31 +21,7 @@ function Home({ web3, connectWallet, t, changeModal, modal }) {
                         <img src={Logo} width="244" height="145" title="Logo" alt="Logo" />
                     </div>
                 </div>
-                <div className="content__highliter-fluid">
-                    <div className="container">
-                        <div className="content__counter">
-                            <p className="content__timer__heading heading">{t('startAfter')}:</p>
-                            <div className="content__timer">
-                                <div className="days">
-                                    <div className="amount">00</div>
-                                    <div className="signature">{t('day')}</div>
-                                </div>
-                                <div className="hours">
-                                    <div className="amount">00</div>
-                                    <div className="signature">{t('hour')}</div>
-                                </div>
-                                <div className="minutes">
-                                    <div className="amount">00</div>
-                                    <div className="signature">{t('min')}</div>
-                                </div>
-                                <div className="seconds">
-                                    <div className="amount">00</div>
-                                    <div className="signature">{t('sec')}</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <Timer t={t} state={state}/>
                 <div className="container">
                     <div className="content__connect__wallet">
                         <button className="content__connect__button" onClick={()=>{
@@ -70,26 +48,7 @@ function Home({ web3, connectWallet, t, changeModal, modal }) {
                         </div>
                     </div>
                 </div>
-                <div className="content__highliter-fluid content__highliter-fluid-last">
-                    <div className="container">
-                        <div className="content__money">
-                            <p className="content__money__heading heading">{t('collected')} <span className="amount"></span> BUSD, {t('left')} <span className="amountLeft"></span>&nbsp;МТМКМ:</p>
-                            <div className="content__money__collected">
-                                <div className="content__money__bar"></div>
-                            </div>
-                            <div className="content__money__goals">
-                                <div className="content__money__goal_min">
-                                    <p>{t('minimal')}</p>
-                                    <p className="goal">Soft Cap</p>
-                                </div>
-                                <div className="content__money__goal_max">
-                                    <p>{t('max')}</p>
-                                    <p className="goal">Hard Cap</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <Money t={t} state={state}/>
             </main>
             <div id="popupErrorAgreement" className={`popup notification error ${modal.errorAgreement ? "open" : ''}`}>
                 <div className="popup__body">

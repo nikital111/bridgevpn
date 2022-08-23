@@ -23,8 +23,53 @@ const BUSDaddress = "0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56";
 let timer;
 let myWeb3;
 function App() {
+
+  useEffect(() => {
+    firstInit();
+  }, [])
+
+  const firstInit = async () => {
+
+    myWeb3 = new Web3(Web3.givenProvider || "https://capable-divine-knowledge.bsc.discover.quiknode.pro/334922ca23326f3194def4af7df85732b7e2e697/");
+
+    const [start, end] = await getTime(myWeb3, contractAddress);
+    const [min, max] = await getMinMax(myWeb3, contractAddress);
+    const [totalSupply, maxSupply] = await getSupply(myWeb3, contractAddress);
+
+    setState({
+      ...state,
+      totalSupply: totalSupply,
+      maxSupply: maxSupply,
+      start: start,
+      end: end,
+      min: min,
+      max: max
+    });
+
+    let time = 0;
+    if (Date.now() < start) {
+      time = (start - Date.now()) / 1000;
+    }
+    if (Date.now() < end && Date.now() > start) {
+      time = (end - Date.now()) / 1000;
+    }
+    if (Date.now() > end) {
+      time = 0;
+    }
+    setCounterData(time);
+    clearInterval(timer);
+    timer = setInterval(() => {
+      if (time <= 1) {
+        clearInterval(timer);
+      }
+      time--;
+      setCounterData(time);
+    }, 1000)
+  };
+
   const [state, setState] = useState({
     wallet: '',
+    balance: 0,
     min: 0,
     max: 0,
     totalSupply: 0,
@@ -33,6 +78,7 @@ function App() {
     end: 0
   });
   const [lang, setLang] = useState('ru');
+  const [buyed, setBuyed] = useState(0);
   const [amount, setAmount] = useState('');
   const [modal, setModal] = useState({
     errorAgreement: false,
@@ -62,7 +108,7 @@ function App() {
     try {
       const providerOptions = {
         walletconnect: {
-          package: WalletConnectProvider, 
+          package: WalletConnectProvider,
           options: {
             rpc: {
               56: "https://capable-divine-knowledge.bsc.discover.quiknode.pro/334922ca23326f3194def4af7df85732b7e2e697/",
@@ -73,8 +119,8 @@ function App() {
       };
 
       const web3Modal = new Web3Modal({
-        cacheProvider: false, 
-        providerOptions 
+        cacheProvider: false,
+        providerOptions
       });
 
       const provider = await web3Modal.connect();
@@ -102,13 +148,9 @@ function App() {
         changeModal('popupChain', false);
         setState(
           {
+            ...state,
             wallet: '',
-            min: 0,
-            max: 0,
-            totalSupply: 0,
-            maxSupply: 0,
-            start: 0,
-            end: 0
+            balance: 0,
           }
         );
         myWeb3 = new Web3();
@@ -116,33 +158,24 @@ function App() {
 
       provider.on("accountsChanged", async (accounts) => {
         if (accounts[0]) {
-          const [start, end] = await getTime(myWeb3, contractAddress);
-          const [min, max] = await getMinMax(myWeb3, contractAddress);
-          const [totalSupply, maxSupply] = await getSupply(myWeb3, contractAddress);
+          // const [start, end] = await getTime(myWeb3, contractAddress);
+          // const [min, max] = await getMinMax(myWeb3, contractAddress);
+          // const [totalSupply, maxSupply] = await getSupply(myWeb3, contractAddress);
           const balance = await getBalance(myWeb3, contractAddress);
 
           setState({
+            ...state,
             wallet: accounts[0],
             balance: balance,
-            min: min,
-            max: max,
-            totalSupply: totalSupply,
-            maxSupply: maxSupply,
-            start: start,
-            end: end
           });
         }
         else {
           changeModal('popupChain', false);
           setState(
             {
+              ...state,
               wallet: '',
-              min: 0,
-              max: 0,
-              totalSupply: 0,
-              maxSupply: 0,
-              start: 0,
-              end: 0
+              balance: 0
             }
           );
           myWeb3 = new Web3();
@@ -182,14 +215,9 @@ function App() {
   const dis = async () => {
     myWeb3 = new Web3();
     setState({
+      ...state,
       wallet: '',
-      balance: 0,
-      min: 0,
-      max: 0,
-      totalSupply: 0,
-      maxSupply: 0,
-      start: 0,
-      end: 0
+      balance: 0
     });
   };
 
@@ -216,7 +244,10 @@ function App() {
     }
     try {
       const approved = await getApproveBUSD(myWeb3, BUSDaddress, contractAddress);
-      if (approved >= amount) BuyTokens(myWeb3, contractAddress, amount);
+      if (approved >= amount) {
+        setBuyed(amount);
+        BuyTokens(myWeb3, contractAddress, amount, succBuy);
+      }
       else changeModal('popupApprove', true);
     }
     catch (err) {
@@ -225,42 +256,29 @@ function App() {
     }
   };
 
+  const succBuy = async () => {
+    changeModal('successPurchase', true);
+
+    const [totalSupply, maxSupply] = await getSupply(myWeb3, contractAddress);
+    const balance = await getBalance(myWeb3, contractAddress);
+
+    setState({
+      ...state,
+      balance: balance,
+      totalSupply: totalSupply,
+      maxSupply: maxSupply,
+    });
+  };
+
   const init = async (web3) => {
-    const [start, end] = await getTime(web3, contractAddress);
     const [acc] = await web3.eth.getAccounts();
-    const [min, max] = await getMinMax(web3, contractAddress);
-    const [totalSupply, maxSupply] = await getSupply(web3, contractAddress);
     const balance = await getBalance(web3, contractAddress);
 
     setState({
+      ...state,
       wallet: acc,
       balance: balance,
-      min: min,
-      max: max,
-      totalSupply: totalSupply,
-      maxSupply: maxSupply,
-      start: start,
-      end: end
-    })
-    let time = 0;
-    if (Date.now() < start) {
-      time = (start - Date.now()) / 1000;
-    }
-    if (Date.now() < end && Date.now() > start) {
-      time = (end - Date.now()) / 1000;
-    }
-    if (Date.now() > end) {
-      time = 0;
-    }
-    setCounterData(time);
-    clearInterval(timer);
-    timer = setInterval(() => {
-      if (time <= 1) {
-        clearInterval(timer);
-      }
-      time--;
-      setCounterData(time);
-    }, 1000)
+    });
 
   };
 
@@ -269,6 +287,23 @@ function App() {
   };
 
   const changeAmount = (val) => {
+    let arr = val.split('');
+    let letters = /^[0-9\.]+$/;
+    let index = arr.indexOf('.');
+    let count = 0;
+    let countAfter = arr.length - index;
+    for(let i = 0; i <= arr.length;i++){
+      if(arr[i] === '.') count++;
+    }
+
+    if((count > 1 || countAfter > 3) && index !== -1){
+      return;
+    }
+
+    if(!val.match(letters) && val.length > 0){
+      return;
+    }
+    
     if (+val < 0) {
       setAmount(0);
     }
@@ -308,6 +343,8 @@ function App() {
                   changeAmount={changeAmount}
                   state={state}
                   approveBUSD={approveBUSD}
+                  buyed={buyed}
+                  setBuyed={setBuyed}
                 />}>
             </Route>
             :
