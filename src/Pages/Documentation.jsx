@@ -1,7 +1,7 @@
 import '../index.css';
 import Logo from "../images/logo.svg";
 import { NavLink } from 'react-router-dom';
-function Documentation({t}) {
+function Documentation({ t }) {
 
 
     return (

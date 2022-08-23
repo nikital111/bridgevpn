@@ -8,8 +8,8 @@ import Money from '../Components/Money';
 
 function Home({ web3, connectWallet, t, changeModal, modal, state }) {
 
-    const [checkedRules,setCheckedRules] = useState(false);
-    const check = ()=>{
+    const [checkedRules, setCheckedRules] = useState(false);
+    const check = () => {
         setCheckedRules(!checkedRules);
     };
 
@@ -21,25 +21,25 @@ function Home({ web3, connectWallet, t, changeModal, modal, state }) {
                         <img src={Logo} width="244" height="145" title="Logo" alt="Logo" />
                     </div>
                 </div>
-                <Timer t={t} state={state}/>
+                <Timer t={t} state={state} />
                 <div className="container">
                     <div className="content__connect__wallet">
-                        <button className="content__connect__button" onClick={()=>{
-                            if(!checkedRules){
+                        <button className="content__connect__button" onClick={() => {
+                            if (!checkedRules) {
                                 changeModal('errorAgreement', true);
                             }
-                            else{
+                            else {
                                 connectWallet();
                             }
                         }}>{t('connectW')}</button>
                         <div className="content__connect__terms">
                             <div className="content__connect__terms__checkbox">
-                                <input type="checkbox" id="accept-privacy" checked={checkedRules} onChange={check}/>
+                                <input type="checkbox" id="accept-privacy" checked={checkedRules} onChange={check} />
                                 <label htmlFor="accept-privacy"></label>
                             </div>
                             <div className="content__connect__terms__text">
-                                <p>{t('accept')} <a className="popup-link" 
-                                onClick={() => changeModal('popupAgreement', true)}
+                                <p>{t('accept')} <a className="popup-link"
+                                    onClick={() => changeModal('popupAgreement', true)}
                                     style={{
                                         cursor: 'pointer'
                                     }}
@@ -48,7 +48,7 @@ function Home({ web3, connectWallet, t, changeModal, modal, state }) {
                         </div>
                     </div>
                 </div>
-                <Money t={t} state={state}/>
+                <Money t={t} state={state} />
             </main>
             <div id="popupErrorAgreement" className={`popup notification error ${modal.errorAgreement ? "open" : ''}`}>
                 <div className="popup__body">
@@ -59,7 +59,7 @@ function Home({ web3, connectWallet, t, changeModal, modal, state }) {
                         </div>
                         <div className="popup__agreement">
                             <button className="popup__button__agree"
-                            onClick={() => changeModal('errorAgreement', false)}
+                                onClick={() => changeModal('errorAgreement', false)}
                             ><span>Ок</span></button>
                         </div>
                     </div>
@@ -83,22 +83,22 @@ function Home({ web3, connectWallet, t, changeModal, modal, state }) {
                         </div>
                         <div className="popup__agreement">
                             <button className="popup__button__agree"
-                            onClick={() => {
-                                setCheckedRules(true);
-                                changeModal('popupAgreement', false);
-                            }}
-                            style={{
-                                cursor: 'pointer'
-                            }}
+                                onClick={() => {
+                                    setCheckedRules(true);
+                                    changeModal('popupAgreement', false);
+                                }}
+                                style={{
+                                    cursor: 'pointer'
+                                }}
                             ><span>{t('accept')}</span></button>
                             <button className="popup__button__disagree"
-                            onClick={() => {
-                                setCheckedRules(false);
-                                changeModal('popupAgreement', false);
-                            }}
-                            style={{
-                                cursor: 'pointer'
-                            }}
+                                onClick={() => {
+                                    setCheckedRules(false);
+                                    changeModal('popupAgreement', false);
+                                }}
+                                style={{
+                                    cursor: 'pointer'
+                                }}
                             ><span>{t('notAccept')}</span></button>
                         </div>
                     </div>

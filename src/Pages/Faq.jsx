@@ -1,7 +1,7 @@
 import '../index.css';
 import Logo from "../images/logo.svg";
 import { NavLink } from 'react-router-dom';
-function Faq({t}) {
+function Faq({ t }) {
 
 
     return (

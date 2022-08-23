@@ -5,27 +5,28 @@ import Exit from "../images/exit.png";
 import { useEffect } from 'react';
 import Timer from '../Components/Timer';
 import Money from '../Components/Money';
+import { TOKEN_NAME } from '../config/consts';
 const contractAddress = "0x4E117b36127D85255AF49A758c2a4766cC017433";
 const BUSDaddress = "0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56";
 
-function HomeLogin({ web3, t, changeModal, modal, dis, buyTokens,amount, changeAmount, state, approveBUSD, buyed, setBuyed }) {
-    useEffect(()=>{
-        const part = (state.totalSupply/state.maxSupply)*100;
+function HomeLogin({ web3, t, changeModal, modal, dis, buyTokens, amount, changeAmount, state, approveBUSD, buyed, setBuyed }) {
+    useEffect(() => {
+        const part = (state.totalSupply / state.maxSupply) * 100;
         const st = part.toString();
         const bar = document.querySelector('.content__money__bar');
-        bar.style.setProperty('--sq-width', st+'%')
-    },[])
+        bar.style.setProperty('--sq-width', st + '%')
+    }, [])
 
     const formatAddress = (address) => {
         let formatAddress = address.split('');
         formatAddress.splice(5, 33, '.', '.', '.');
         let res = formatAddress.join('');
         return res;
-      }
+    }
 
-      const copyText = (text) => {
+    const copyText = (text) => {
         navigator.clipboard.writeText(text);
-      }
+    }
     return (
         <>
             <main className="content">
@@ -36,26 +37,26 @@ function HomeLogin({ web3, t, changeModal, modal, dis, buyTokens,amount, changeA
                             <div className="content__info__address">
                                 <a className="popup-link"
                                     style={{
-                                        display:'flex',
-                                        justifyContent:'center',
-                                        alignItems:'center'
+                                        display: 'flex',
+                                        justifyContent: 'center',
+                                        alignItems: 'center'
                                     }}
-                                >{formatAddress(state.wallet)} 
-                                <div className='tooltip'>
-                                <img src={Copy} onClick={() => copyText(state.wallet)} style={{width:'20px',marginLeft:'5px',cursor:'pointer'}}/>
-                                <span className="tooltiptext">{t('copy')}</span>
-                                </div>
-                                <div className='tooltip'>
-                                <img src={Exit} onClick={() => changeModal('exit', true)} style={{width:'20px',marginLeft:'5px',cursor:'pointer'}}/>
-                                <span className="tooltiptext">{t('exit')}</span>
-                                </div>
+                                >{formatAddress(state.wallet)}
+                                    <div className='tooltip'>
+                                        <img src={Copy} onClick={() => copyText(state.wallet)} style={{ width: '20px', marginLeft: '5px', cursor: 'pointer' }} />
+                                        <span className="tooltiptext">{t('copy')}</span>
+                                    </div>
+                                    <div className='tooltip'>
+                                        <img src={Exit} onClick={() => changeModal('exit', true)} style={{ width: '20px', marginLeft: '5px', cursor: 'pointer' }} />
+                                        <span className="tooltiptext">{t('exit')}</span>
+                                    </div>
                                 </a>
                             </div>
-                            <p className="content__info__balance">Ваш баланс <span className="content__info__balance-total"><span className="amount"></span>{state.balance} токенов</span></p>
+                            <p className="content__info__balance">Ваш баланс <span className="content__info__balance-total"><span className="amount"></span>{state.balance} {TOKEN_NAME}</span></p>
                         </div>
                     </div>
                 </div>
-                <Timer t={t} state={state}/>
+                <Timer t={t} state={state} />
                 <div className="container">
                     <div className="content__buy">
                         <input className="content__buy__input" placeholder="100.00" value={amount} onChange={(e) => changeAmount(e.target.value)} />
@@ -63,7 +64,7 @@ function HomeLogin({ web3, t, changeModal, modal, dis, buyTokens,amount, changeA
                         <button className="content__buy__button" onClick={buyTokens}>{t('buy')}</button>
                     </div>
                 </div>
-                <Money t={t} state={state}/>
+                <Money t={t} state={state} />
             </main>
             <div id="popupTurnOffWallet" className={`popup notification ${modal.exit ? "open" : ''}`}>
                 <div className="popup__body">
@@ -185,8 +186,8 @@ function HomeLogin({ web3, t, changeModal, modal, dis, buyTokens,amount, changeA
                         </div>
                         <div className="popup__agreement">
                             <button className="popup__button__agree"
-                                onClick={() => { 
-                                    changeModal('successPurchase', false); 
+                                onClick={() => {
+                                    changeModal('successPurchase', false);
                                     setBuyed(0);
                                 }}
                             ><span>Ок</span></button>
@@ -209,17 +210,17 @@ function HomeLogin({ web3, t, changeModal, modal, dis, buyTokens,amount, changeA
                             {/* <p>{t('popRules1')}</p> */}
                         </div>
                         <div className="popup__agreement"
-                        style={{
-                            justifyContent:'center'
-                        }}
+                            style={{
+                                justifyContent: 'center'
+                            }}
                         >
                             <button className="popup__button__agree"
-                            onClick={() => {
-                                approveBUSD(web3,BUSDaddress,amount,contractAddress,changeModal);
-                            }}
-                            style={{
-                                cursor: 'pointer'
-                            }}
+                                onClick={() => {
+                                    approveBUSD(web3, BUSDaddress, amount, contractAddress, changeModal);
+                                }}
+                                style={{
+                                    cursor: 'pointer'
+                                }}
                             ><span>{t('approve')}</span></button>
                         </div>
                     </div>

@@ -18,26 +18,72 @@ import BuyTokens from './scripts/buyTokens';
 import approveBUSD from './scripts/approveBUSD';
 import getApproveBUSD from './scripts/getApproveBUSD';
 import { setCounterData } from "./scripts/script";
-const contractAddress = "0x4E117b36127D85255AF49A758c2a4766cC017433";
-const BUSDaddress = "0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56";
+import Cookies from 'js-cookie';
+import { CONTRACT_ADDRESS, BUSD_ADDRESS } from './config/consts';
+
+const contractAddress = CONTRACT_ADDRESS;
+const BUSDaddress = BUSD_ADDRESS;
+
 let timer;
 let myWeb3;
+
+const providerOptions = {
+  walletconnect: {
+    package: WalletConnectProvider,
+    options: {
+      rpc: {
+        56: "https://capable-divine-knowledge.bsc.discover.quiknode.pro/334922ca23326f3194def4af7df85732b7e2e697/",
+      },
+    }
+
+  }
+};
+const web3Modal = new Web3Modal({
+  cacheProvider: true,
+  providerOptions
+});
+
+
 function App() {
 
   useEffect(() => {
     firstInit();
-  }, [])
+  }, []);
+
+
 
   const firstInit = async () => {
 
-    myWeb3 = new Web3(Web3.givenProvider || "https://capable-divine-knowledge.bsc.discover.quiknode.pro/334922ca23326f3194def4af7df85732b7e2e697/");
+    if (Cookies.get('lang')) {
+      setLang(Cookies.get('lang'));
+      document.documentElement.lang = Cookies.get('lang');
+    }
+
+    console.log(web3Modal.cachedProvider)
+    if (web3Modal.cachedProvider) {
+      const provider = await web3Modal.connect();
+      myWeb3 = new Web3(provider);
+    }
+    else {
+      myWeb3 = new Web3(Web3.givenProvider || "https://capable-divine-knowledge.bsc.discover.quiknode.pro/334922ca23326f3194def4af7df85732b7e2e697/");
+    }
+
+    let acc = '';
+    let balance = 0;
+
+    if (web3Modal.cachedProvider) {
+      [acc] = await myWeb3.eth.getAccounts();
+      balance = await getBalance(myWeb3, contractAddress);
+    }
 
     const [start, end] = await getTime(myWeb3, contractAddress);
     const [min, max] = await getMinMax(myWeb3, contractAddress);
     const [totalSupply, maxSupply] = await getSupply(myWeb3, contractAddress);
 
+
     setState({
-      ...state,
+      wallet: acc,
+      balance: balance,
       totalSupply: totalSupply,
       maxSupply: maxSupply,
       start: start,
@@ -45,6 +91,8 @@ function App() {
       min: min,
       max: max
     });
+
+
 
     let time = 0;
     if (Date.now() < start) {
@@ -64,7 +112,7 @@ function App() {
       }
       time--;
       setCounterData(time);
-    }, 1000)
+    }, 1000);
   };
 
   const [state, setState] = useState({
@@ -95,33 +143,22 @@ function App() {
     popupChain: false
   });
 
+  useEffect(() => {
+    console.log(state);
+  }, [state])
+
   const changeModal = (name, bool) => {
     setModal({ ...modal, [name]: bool });
   };
 
   const changeLang = (l) => {
+    Cookies.set('lang', l, { path: '/', sameSite: 'strict', expires: 360000 });
     setLang(l);
     document.documentElement.lang = l;
   };
 
   const connectWallet = async () => {
     try {
-      const providerOptions = {
-        walletconnect: {
-          package: WalletConnectProvider,
-          options: {
-            rpc: {
-              56: "https://capable-divine-knowledge.bsc.discover.quiknode.pro/334922ca23326f3194def4af7df85732b7e2e697/",
-            },
-          }
-
-        }
-      };
-
-      const web3Modal = new Web3Modal({
-        cacheProvider: false,
-        providerOptions
-      });
 
       const provider = await web3Modal.connect();
       myWeb3 = new Web3(provider);
@@ -153,7 +190,9 @@ function App() {
             balance: 0,
           }
         );
+        setAmount('');
         myWeb3 = new Web3();
+        web3Modal.clearCachedProvider();
       });
 
       provider.on("accountsChanged", async (accounts) => {
@@ -219,6 +258,8 @@ function App() {
       wallet: '',
       balance: 0
     });
+    setAmount('');
+    web3Modal.clearCachedProvider();
   };
 
   const buyTokens = async () => {
@@ -259,6 +300,8 @@ function App() {
   const succBuy = async () => {
     changeModal('successPurchase', true);
 
+    setAmount('');
+
     const [totalSupply, maxSupply] = await getSupply(myWeb3, contractAddress);
     const balance = await getBalance(myWeb3, contractAddress);
 
@@ -292,18 +335,18 @@ function App() {
     let index = arr.indexOf('.');
     let count = 0;
     let countAfter = arr.length - index;
-    for(let i = 0; i <= arr.length;i++){
-      if(arr[i] === '.') count++;
+    for (let i = 0; i <= arr.length; i++) {
+      if (arr[i] === '.') count++;
     }
 
-    if((count > 1 || countAfter > 3) && index !== -1){
+    if ((count > 1 || countAfter > 3) && index !== -1) {
       return;
     }
 
-    if(!val.match(letters) && val.length > 0){
+    if (!val.match(letters) && val.length > 0) {
       return;
     }
-    
+
     if (+val < 0) {
       setAmount(0);
     }
